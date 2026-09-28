@@ -1,0 +1,86 @@
+{
+    "model_name": "Random Forest",
+    "target": "price",
+    "features": [
+        "airline",
+        "source_city",
+        "departure_time",
+        "stops",
+        "arrival_time",
+        "destination_city",
+        "class",
+        "duration",
+        "days_left"
+    ],
+    "categorical_features": [
+        "airline",
+        "source_city",
+        "departure_time",
+        "stops",
+        "arrival_time",
+        "destination_city",
+        "class"
+    ],
+    "numerical_features": [
+        "duration",
+        "days_left"
+    ],
+    "metrics": {
+        "MAE": 1299.0703877702865,
+        "RMSE": 2804.5095174040803,
+        "R2": 0.9847419125031092,
+        "MAE_CI_95_lower": 1279.5174980932923,
+        "MAE_CI_95_upper": 1318.9302223576176
+    },
+    "categorical_options": {
+        "airline": [
+            "AirAsia",
+            "Air_India",
+            "GO_FIRST",
+            "Indigo",
+            "SpiceJet",
+            "Vistara"
+        ],
+        "source_city": [
+            "Bangalore",
+            "Chennai",
+            "Delhi",
+            "Hyderabad",
+            "Kolkata",
+            "Mumbai"
+        ],
+        "departure_time": [
+            "Afternoon",
+            "Early_Morning",
+            "Evening",
+            "Late_Night",
+            "Morning",
+            "Night"
+        ],
+        "stops": [
+            "one",
+            "two_or_more",
+            "zero"
+        ],
+        "arrival_time": [
+            "Afternoon",
+            "Early_Morning",
+            "Evening",
+            "Late_Night",
+            "Morning",
+            "Night"
+        ],
+        "destination_city": [
+            "Bangalore",
+            "Chennai",
+            "Delhi",
+            "Hyderabad",
+            "Kolkata",
+            "Mumbai"
+        ],
+        "class": [
+            "Business",
+            "Economy"
+        ]
+    }
+}
