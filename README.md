@@ -1,6 +1,8 @@
 <div align="center">
 
-# ✈️ SkyPrice
+<img src="assets/favicon.svg" width="92" alt="SkyPrice logo"/>
+
+# SkyPrice
 
 ### Predicting domestic flight fares with Machine Learning
 
@@ -315,28 +317,61 @@ flight-price-ml/
 ├── artifacts/
 │   ├── flight_price_model.meta.json       # feature contract + metrics
 │   └── flight_price_pipeline.joblib       # fitted pipeline, 62 MB
+├── assets/
+│   └── favicon.svg                        # master brand mark (source of truth)
 ├── data/
 │   └── Clean_Dataset.csv                  # 300,153 flights
 ├── docs/                                  # figures used by this README
-│   ├── app_home.png
-│   ├── app_prediction.png
-│   ├── booking_curve.png
-│   ├── feature_importance.png
-│   ├── price_distribution.png
-│   └── route_heatmap.png
+│   ├── app_home.png,
+│   ├── app_prediction.png,
+│   ├── booking_curve.png,
+│   ├── feature_importance.png,
+│   ├── price_distribution.png,
+│   └── route_heatmap.png,
 ├── notebooks/
 │   └── flight_price_prediction.ipynb      # the full walkthrough, 11 sections
 ├── scripts/
 │   ├── train_model.py                     # reproducible training + artifact export
 │   ├── generate_charts.py                 # regenerates docs/ from data + model
+│   ├── build_brand_assets.py              # regenerates static/ from assets/
 │   ├── capture_screenshots.py             # screenshots the running app
+│   ├── verify_branding.py                 # checks title, favicon and OG tags
 │   └── model_size_benchmark.py            # size vs accuracy trade-off
+├── static/                                # served by Streamlit at /app/static/
+│   ├── favicon.svg                        # app mark (browser tab icon)
+│   ├── favicon.png                        # 512x512 raster fallback
+│   └── og_image.png                       # 1200x630 social preview card
+├── .streamlit/
+│   └── config.toml                        # enables static file serving
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
 ├── run.py                                # start command for hosted environments
 └── streamlit_app.py                       # host entry point -> runs app/app.py
 ```
+
+### 🎨 Branding
+
+The app ships with its own mark instead of a generic emoji:
+
+| Asset | Where it shows up | How it is used |
+| --- | --- | --- |
+| `assets/favicon.svg` | master source | hand-authored SVG, regenerated into `static/` |
+| `static/favicon.svg` | browser tab | inlined as a data URI by `st.set_page_config(page_icon=...)` |
+| `static/favicon.png` | 512×512 fallback | raster version of the same mark |
+| `static/og_image.png` | link previews | `og:image` / `twitter:image` for shared links |
+
+Rebuild everything with:
+
+```bash
+python scripts/build_brand_assets.py
+```
+
+<div align="center">
+  <img src="assets/icon_preview.png" alt="The SkyPrice mark rendered at 160, 64, 32 and 16 pixels" width="720"/>
+</div>
+
+The mark stays legible all the way down to a 16 px browser tab.
 
 ---
 

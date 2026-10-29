@@ -42,6 +42,9 @@ def main() -> None:
         "false",
         "--server.enableXsrfProtection",
         "false",
+        # Serve ./static at /static/... (favicon + social preview card).
+        "--server.enableStaticServing",
+        "true",
         "--browser.gatherUsageStats",
         "false",
     ]

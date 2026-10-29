@@ -1,7 +1,7 @@
 
 from pathlib import Path
+import base64
 import json
-import html
 
 import joblib
 import pandas as pd
@@ -9,25 +9,67 @@ import streamlit as st
 
 
 # =========================================================
-# 1. PAGE CONFIG
+# 1. PAGE CONFIG & BRAND
 # =========================================================
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = BASE_DIR / "static"
+
+MODEL_PATH = BASE_DIR / "artifacts" / "flight_price_pipeline.joblib"
+METADATA_PATH = BASE_DIR / "artifacts" / "flight_price_model.meta.json"
+
+
+def _data_uri(mime: str, name: str) -> str:
+    """Inline a file from static/ as a data URI.
+
+    The brand mark is embedded rather than linked so the favicon resolves
+    correctly on every host, whatever the public URL turns out to be.
+    """
+    path = STATIC_DIR / name
+    if not path.exists():
+        return ""
+    payload = base64.b64encode(path.read_bytes()).decode()
+    return f"data:{mime};base64,{payload}"
+
+
+MARK_URI = _data_uri("image/svg+xml", "favicon.svg") or "✈️"
+
 st.set_page_config(
-    page_title="SkyPrice | Flight Price Prediction",
-    page_icon="✈️",
+    page_title="SkyPrice — AI Flight Price Predictor",
+    page_icon=MARK_URI,
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
 
-# =========================================================
-# 2. PATHS & MODEL
-# =========================================================
+# Link-preview tags. The image path is relative on purpose so it resolves
+# against whatever host ends up serving the app (no hard-coded domain).
+# Streamlit mounts the app's ./static folder at /app/static/.
+OG_IMAGE = "/app/static/og_image.png"
+OG_TITLE = "SkyPrice — AI Flight Price Predictor"
+OG_DESC = (
+    "Estimate flight fares with a machine-learning model trained on "
+    "300,153 real routes. Instant, explainable fare estimates."
+)
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+st.markdown(
+    f"""
+<meta property="og:title" content="{OG_TITLE}" />
+<meta property="og:description" content="{OG_DESC}" />
+<meta property="og:image" content="{OG_IMAGE}" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{OG_TITLE}" />
+<meta name="twitter:description" content="{OG_DESC}" />
+<meta name="twitter:image" content="{OG_IMAGE}" />
+""",
+    unsafe_allow_html=True,
+)
 
-MODEL_PATH = BASE_DIR / "artifacts" / "flight_price_pipeline.joblib"
-METADATA_PATH = BASE_DIR / "artifacts" / "flight_price_model.meta.json"
+
+# =========================================================
+# 2. MODEL
+# =========================================================
 
 
 @st.cache_resource
@@ -131,6 +173,21 @@ header[data-testid="stHeader"] {
 
 .hero {
     padding: 25px 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.hero-mark {
+    width: 74px;
+    height: 74px;
+    border-radius: 18px;
+    flex: none;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+
+.hero-text {
+    min-width: 0;
 }
 
 .eyebrow {
@@ -276,14 +333,17 @@ hr {
 # 5. HEADER
 # =========================================================
 
-st.markdown("""
+st.markdown(f"""
 <div class="hero">
-    <div class="eyebrow">✈ AI Flight Analytics</div>
-    <h1>Flight Price Prediction</h1>
-    <p>
-        Discover your estimated flight fare using
-        machine learning.
-    </p>
+    <img class="hero-mark" src="{MARK_URI}" alt="SkyPrice" />
+    <div class="hero-text">
+        <div class="eyebrow">SkyPrice &middot; AI Flight Analytics</div>
+        <h1>Flight Price Prediction</h1>
+        <p>
+            Discover your estimated flight fare using
+            machine learning.
+        </p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 

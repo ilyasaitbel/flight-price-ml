@@ -1,0 +1,20 @@
+# Streamlit configuration for SkyPrice.
+#
+# These settings make the app behave identically on every host: the WorkBuddy
+# container, Streamlit Community Cloud, and a plain local `streamlit run`.
+
+[server]
+# Serve the contents of ./static at /static/... (favicon + social preview card).
+# Streamlit disables this by default, which would 404 the OpenGraph image.
+enableStaticServing = true
+
+headless = true
+port = 8501
+# The app is stateless and public, so there is no session cookie worth
+# cross-origin protecting. Hosted behind a reverse proxy this also avoids
+# the browser rejecting the proxied origin.
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
