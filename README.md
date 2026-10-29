@@ -120,12 +120,13 @@ the container has everything it needs at start-up.
 The app is a plain single-port HTTP service, so it runs anywhere Streamlit does:
 
 ```bash
-streamlit run streamlit_app.py \
-  --server.port ${PORT:-8501} \
-  --server.address 0.0.0.0 \
-  --server.enableCORS false \
-  --server.enableXsrfProtection false
+python run.py
 ```
+
+`run.py` is the recommended start command: it reads the public port from the `PORT` environment
+variable in Python and binds to `0.0.0.0` for the platform's reverse proxy. Writing
+`--server.port $PORT` directly in a start command is fragile — when `$PORT` is empty the flag
+swallows the next argument and Streamlit exits with an integer parse error.
 
 `streamlit_app.py` at the repository root is a thin wrapper that executes `app/app.py` — it exists
 because most hosts look for that exact filename.
@@ -333,6 +334,7 @@ flight-price-ml/
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
+├── run.py                                # start command for hosted environments
 └── streamlit_app.py                       # host entry point -> runs app/app.py
 ```
 
