@@ -79,12 +79,12 @@ CITIES = [
 ]
 
 TIMES = [
-    "Early Morning",
+    "Early_Morning",
     "Morning",
     "Afternoon",
     "Evening",
     "Night",
-    "Late Night",
+    "Late_Night",
 ]
 
 STOPS = [

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Trained model artifact.
+# The Random Forest pipeline is ~1 GB, well above GitHub's 100 MB per-file
+# limit, so it is never committed. Regenerate it with:
+#     python scripts/train_model.py
+artifacts/*.joblib
+
+# Logs
+*.log
