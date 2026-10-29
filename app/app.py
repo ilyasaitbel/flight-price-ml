@@ -2,6 +2,7 @@
 from pathlib import Path
 import base64
 import json
+from urllib.parse import parse_qs, urlparse
 
 import joblib
 import pandas as pd
@@ -58,18 +59,46 @@ OG_DESC = (
 
 
 def _public_origin() -> str:
-    """Absolute origin of the current page, honouring reverse-proxy headers."""
+    """Absolute origin of the current page, as the browser sees it.
+
+    The frontend reports the URL the visitor actually typed, which is the
+    public address even when the app itself runs behind a proxy. The Host
+    header is only a fallback: some proxies rewrite it into an internal
+    sandbox hostname, which must never leak into a shared link.
+    """
+    url = st.context.url
+    if url:
+        parsed = urlparse(url)
+        if parsed.scheme in ("http", "https") and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}"
+
     try:
         headers = {k.lower(): v for k, v in st.context.headers.items()}
     except Exception:  # pragma: no cover - context unavailable outside a session
         return ""
 
-    host = headers.get("x-forwarded-host") or headers.get("host") or ""
-    if not host:
-        return ""
+    raw_host = headers.get("x-forwarded-host") or headers.get("host") or ""
+    for candidate in raw_host.split(","):
+        candidate = candidate.strip()
+        if "//" in candidate:
+            candidate = urlparse(candidate).netloc
+        if candidate and "." in candidate:
+            proto = headers.get("x-forwarded-proto") or "https"
+            return f"{proto}://{candidate}"
+    return ""
 
-    proto = headers.get("x-forwarded-proto") or ("https" if host.endswith(".host") else "http")
-    return f"{proto}://{host}"
+
+def _share_code() -> str:
+    """The access code some hosts require, if the URL carries one."""
+    url = st.context.url
+    if url:
+        code = parse_qs(urlparse(url).query).get("sharecode", [""])[0]
+        if code:
+            return code
+    try:
+        return st.query_params.get("sharecode", "")
+    except Exception:  # pragma: no cover - no query params in this context
+        return ""
 
 
 def _og_image_url() -> str:
@@ -78,7 +107,7 @@ def _og_image_url() -> str:
         return OG_PATH
 
     url = f"{origin}{OG_PATH}"
-    share_code = st.query_params.get("sharecode")
+    share_code = _share_code()
     if share_code:
         url = f"{url}?sharecode={share_code}"
     return url
