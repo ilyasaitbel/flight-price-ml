@@ -4,17 +4,18 @@
 
 ### Predicting domestic flight fares with Machine Learning
 
-**300,153 flights · 9 features · Random Forest · R² 0.985**
+**300,153 flights · 9 features · Random Forest · R² 0.984**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B2B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![pandas](https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
-[![R²](https://img.shields.io/badge/R%C2%B2-0.985-brightgreen?style=flat-square)](https://scikit-learn.org/stable/modules/model_evaluation.html#r2-score)
-[![MAE](https://img.shields.io/badge/MAE-%E2%82%B91%2C299-2F81F7?style=flat-square)](https://scikit-learn.org/stable/modules/model_evaluation.html#mean-absolute-error)
+[![R²](https://img.shields.io/badge/R%C2%B2-0.984-brightgreen?style=flat-square)](https://scikit-learn.org/stable/modules/model_evaluation.html#r2-score)
+[![MAE](https://img.shields.io/badge/MAE-%E2%82%B91%2C338-2F81F7?style=flat-square)](https://scikit-learn.org/stable/modules/model_evaluation.html#mean-absolute-error)
 [![License: MIT](https://img.shields.io/badge/License-MIT-34D399?style=flat-square)](LICENSE)
+[![Deploy to Streamlit Cloud](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?url=https://github.com/ilyasaitbel/flight-price-ml)
 
-[🚀 Live demo](#-the-app) · [⚡ Quick start](#-quick-start) · [📊 Results](#-results) · [🧠 Model card](#-model-card) · [📁 Structure](#-project-structure)
+[🚀 Live demo](#-the-app) · [⚡ Quick start](#-quick-start) · [☁️ Deploy](#-deploy) · [📊 Results](#-results) · [🧠 Model card](#-model-card) · [📁 Structure](#-project-structure)
 
 </div>
 
@@ -42,7 +43,7 @@ the figures, and a dark-themed Streamlit app that runs the trained pipeline end 
 
 <div align="center">
 
-<img src="docs/app_prediction.png" alt="SkyPrice Streamlit app showing a predicted fare of ₹4,823.43" width="820"/>
+<img src="docs/app_prediction.png" alt="SkyPrice Streamlit app showing a predicted fare of ₹4,970.89" width="820"/>
 
 </div>
 
@@ -57,6 +58,9 @@ trip summary underneath and an explicit note that the figure is a model estimate
 
 ## ⚡ Quick start
 
+The trained model **is committed** (`artifacts/flight_price_pipeline.joblib`, 62 MB), so a fresh clone
+runs the app immediately — no training step required.
+
 ```bash
 git clone https://github.com/ilyasaitbel/flight-price-ml.git
 cd flight-price-ml
@@ -65,37 +69,66 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 pip install -r requirements.txt
-```
-
-### 1 — Train the model
-
-The trained pipeline is **~1 GB**, far above GitHub's 100 MB per-file limit, so it is not committed.
-Regenerate it locally (about four minutes on a laptop):
-
-```bash
-python scripts/train_model.py
-```
-
-This writes two files to `artifacts/`:
-
-| File | Purpose |
-| :--- | :--- |
-| `flight_price_pipeline.joblib` | the fitted `Pipeline` — preprocessing **and** model in one object |
-| `flight_price_model.meta.json` | the feature contract, category lists and evaluation metrics |
-
-### 2 — Run the app
-
-```bash
-streamlit run app/app.py
+streamlit run streamlit_app.py
 ```
 
 Open [http://localhost:8501](http://localhost:8501) and drop in a trip.
 
-### 3 — (Optional) Regenerate the figures
+<details>
+<summary>Retrain the model from scratch</summary>
 
 ```bash
-python scripts/generate_charts.py
+python scripts/train_model.py     # ~2 minutes on a laptop
 ```
+
+This rewrites `artifacts/flight_price_pipeline.joblib` and
+`artifacts/flight_price_model.meta.json`. See
+[the size trade-off](#why-the-model-is-62-mb) for why the shipped model is
+tuned for size.
+</details>
+
+<details>
+<summary>Regenerate the figures and screenshots</summary>
+
+```bash
+python scripts/generate_charts.py          # docs/*.png from data + model
+python scripts/capture_screenshots.py      # screenshots the running app
+```
+
+</details>
+
+---
+
+## ☁️ Deploy
+
+### Streamlit Community Cloud
+
+The fastest way to get a public URL. The repository is already deployable as-is:
+
+1. Sign in at [share.streamlit.io](https://share.streamlit.io) with your GitHub account.
+2. Click **Deploy to Streamlit Cloud** in the badge at the top of this README, or paste this repo
+   URL into the deploy dialog.
+3. Choose the branch (`main`) and the main file path (`streamlit_app.py`).
+
+That is the whole setup — `requirements.txt` is at the root and the model artefact is committed, so
+the container has everything it needs at start-up.
+
+> The app runs entirely on the free tier. There is no database, no external service and no API key.
+
+### Any other host
+
+The app is a plain single-port HTTP service, so it runs anywhere Streamlit does:
+
+```bash
+streamlit run streamlit_app.py \
+  --server.port ${PORT:-8501} \
+  --server.address 0.0.0.0 \
+  --server.enableCORS false \
+  --server.enableXsrfProtection false
+```
+
+`streamlit_app.py` at the repository root is a thin wrapper that executes `app/app.py` — it exists
+because most hosts look for that exact filename.
 
 ---
 
@@ -133,28 +166,28 @@ Evaluated once on a held-out test set of **60,031 flights** that never took part
 
 | Metric | Value | Reading |
 | :--- | ---: | :--- |
-| **MAE** | ₹1,299.07 | typical error ≈ ₹1,300 |
-| **MAE 95% CI** | ₹1,279.52 – ₹1,318.93 | percentile bootstrap, 200 resamples |
-| **RMSE** | ₹2,804.51 | penalises the large misses |
-| **R²** | **0.9847** | explains 98.5% of the fare variance |
+| **MAE** | ₹1,337.50 | typical error ≈ ₹1,340 |
+| **MAE 95% CI** | ₹1,319.23 – ₹1,355.49 | percentile bootstrap, 200 resamples |
+| **RMSE** | ₹2,834.52 | penalises the large misses |
+| **R²** | **0.9844** | explains 98.4% of the fare variance |
 
 <div align="center">
 <img src="docs/feature_importance.png" alt="Aggregated feature importance" width="760"/>
 </div>
 
-**The headline finding is blunt: the travel class carries 88% of the signal.** Duration adds 5.7%,
-and the booking window 1.7%. Route, airline and time of day barely register on their own — a
+**The headline finding is blunt: the travel class carries 89% of the signal.** Duration adds 5.4%,
+and the booking window 1.4%. Route, airline and time of day barely register on their own — a
 genuinely useful thing to learn about how airline pricing works.
 
 | Feature | Type | Share of importance |
 | :--- | :--- | ---: |
-| `class` | categorical | **88.3%** |
-| `duration` | numerical | 5.7% |
-| `days_left` | numerical | 1.7% |
-| `source_city` | categorical | 1.1% |
+| `class` | categorical | **89.0%** |
+| `duration` | numerical | 5.4% |
+| `days_left` | numerical | 1.4% |
 | `airline` | categorical | 1.1% |
-| `destination_city` | categorical | 1.1% |
-| `arrival_time` | categorical | 0.5% |
+| `source_city` | categorical | 1.1% |
+| `destination_city` | categorical | 1.0% |
+| `arrival_time` | categorical | 0.4% |
 | `departure_time` | categorical | 0.4% |
 | `stops` | categorical | 0.2% |
 
@@ -234,8 +267,28 @@ in principle generalise to a new flight.
 | :--- | :--- | :--- |
 | Categorical | `OneHotEncoder(handle_unknown="ignore")` | unseen categories map to zeros instead of crashing the app |
 | Numerical | `passthrough` | trees need no scaling |
-| Estimator | `RandomForestRegressor(n_estimators=200, max_depth=30, min_samples_leaf=2)` | strong on tabular data, gives feature importances for free, no scaling needed |
+| Estimator | `RandomForestRegressor(n_estimators=120, max_depth=20, min_samples_leaf=4)` | strong on tabular data, gives feature importances for free, no scaling needed |
 | Split | 80 / 20, `random_state=42` | test set touched once, at evaluation time |
+
+### Why the model is 62 MB
+
+The forest is fitted on 240,122 rows, so every extra level of depth roughly doubles the node count
+and the pickled artefact grows fast. The first configuration used here — 200 trees at depth 30 —
+produced a **1,073 MB** `.joblib`: far above GitHub's 100 MB per-file limit, and too heavy for a
+hosted app to load.
+
+`scripts/model_size_benchmark.py` measures the trade-off directly:
+
+| Trees | Depth | Min leaf | MAE | RMSE | R² | Size |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 200 | 30 | 2 | ₹1,092.03 | ₹2,693.82 | 0.98592 | 1,073.0 MB |
+| **120** | **20** | **4** | **₹1,337.50** | **₹2,834.52** | **0.98441** | **62.4 MB** ← shipped |
+| 80 | 16 | 8 | ₹1,724.80 | ₹3,339.77 | 0.97836 | 16.2 MB |
+| 60 | 14 | 12 | ₹1,962.33 | ₹3,708.00 | 0.97333 | 6.6 MB |
+| 40 | 12 | 20 | ₹2,192.30 | ₹4,059.74 | 0.96803 | 2.1 MB |
+
+The shipped model is **17× smaller for a 3% higher MAE**, still explains 98.4% of the fare variance,
+and fits comfortably in a Git commit and in a hosted container.
 
 ### Known limitations
 
@@ -259,8 +312,8 @@ flight-price-ml/
 ├── app/
 │   └── app.py                             # Streamlit interface (dark theme, single form)
 ├── artifacts/
-│   ├── flight_price_model.meta.json       # feature contract + metrics  (committed)
-│   └── flight_price_pipeline.joblib       # fitted pipeline, ~1 GB       (not committed)
+│   ├── flight_price_model.meta.json       # feature contract + metrics
+│   └── flight_price_pipeline.joblib       # fitted pipeline, 62 MB
 ├── data/
 │   └── Clean_Dataset.csv                  # 300,153 flights
 ├── docs/                                  # figures used by this README
@@ -275,10 +328,12 @@ flight-price-ml/
 ├── scripts/
 │   ├── train_model.py                     # reproducible training + artifact export
 │   ├── generate_charts.py                 # regenerates docs/ from data + model
-│   └── capture_screenshots.py             # screenshots the running app
+│   ├── capture_screenshots.py             # screenshots the running app
+│   └── model_size_benchmark.py            # size vs accuracy trade-off
 ├── .gitignore
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── streamlit_app.py                       # host entry point -> runs app/app.py
 ```
 
 ---
@@ -289,12 +344,14 @@ flight-price-ml/
 | :--- | :--- |
 | Seed | `random_state=42` everywhere |
 | Split | 240,122 train / 60,031 test |
-| Metrics from `scripts/train_model.py` | MAE ₹1,092.03 · RMSE ₹2,693.82 · R² 0.9859 |
-| Metrics committed in `artifacts/…meta.json` | MAE ₹1,299.07 · RMSE ₹2,804.51 · R² 0.9847 |
+| Metrics | MAE ₹1,337.50 · RMSE ₹2,834.52 · R² 0.98441 |
+| MAE 95% CI | ₹1,319.23 – ₹1,355.49 (percentile bootstrap, 200 resamples) |
+| Artefact | 62.4 MB, `joblib` compressed at level 3 |
+| Train time | ~2 minutes on a laptop (120 trees, `n_jobs=-1`) |
 
-Both runs agree on the feature contract and land within ~1% of each other; the difference is tree
-sampling and the train/test split used to produce the original artifact. The MAE confidence interval
-is a percentile bootstrap over 200 resamples of the test errors, not a closed-form estimate.
+`scripts/train_model.py` is deterministic given the seed: rerunning it reproduces the metrics above
+and the committed `artifacts/flight_price_model.meta.json`. The MAE confidence interval is a
+percentile bootstrap over the test errors, not a closed-form estimate.
 
 ---
 

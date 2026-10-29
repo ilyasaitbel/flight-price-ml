@@ -21,10 +21,11 @@ env/
 Thumbs.db
 
 # Trained model artifact.
-# The Random Forest pipeline is ~1 GB, well above GitHub's 100 MB per-file
-# limit, so it is never committed. Regenerate it with:
-#     python scripts/train_model.py
-artifacts/*.joblib
+# artifacts/flight_price_pipeline.joblib IS committed on purpose (~62 MB, well
+# under GitHub's 100 MB per-file limit) so that a fresh clone can run the app
+# and so that Streamlit Community Cloud has the model available at start-up.
+# Only scratch artefacts from scripts/model_size_benchmark.py are ignored.
+artifacts/_size_test_*.joblib
 
 # Logs
 *.log

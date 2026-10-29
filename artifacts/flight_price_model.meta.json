@@ -25,12 +25,22 @@
         "duration",
         "days_left"
     ],
+    "model_config": {
+        "n_estimators": 120,
+        "max_depth": 20,
+        "min_samples_leaf": 4,
+        "random_state": 42,
+        "test_size": 0.2,
+        "n_train": 240122,
+        "n_test": 60031,
+        "artifact_mb": 62.4
+    },
     "metrics": {
-        "MAE": 1299.0703877702865,
-        "RMSE": 2804.5095174040803,
-        "R2": 0.9847419125031092,
-        "MAE_CI_95_lower": 1279.5174980932923,
-        "MAE_CI_95_upper": 1318.9302223576176
+        "MAE": 1337.4958109788263,
+        "RMSE": 2834.5234490188095,
+        "R2": 0.9844135800685996,
+        "MAE_CI_95_lower": 1319.2260926670072,
+        "MAE_CI_95_upper": 1355.4887183587643
     },
     "categorical_options": {
         "airline": [
