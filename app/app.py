@@ -42,15 +42,49 @@ st.set_page_config(
 )
 
 
-# Link-preview tags. The image path is relative on purpose so it resolves
-# against whatever host ends up serving the app (no hard-coded domain).
-# Streamlit mounts the app's ./static folder at /app/static/.
-OG_IMAGE = "/app/static/og_image.png"
+# Link-preview tags. `og:image` has to be an absolute URL, and the host we
+# end up on is decided by whoever deploys the app - so the URL is rebuilt at
+# request time from the proxy headers instead of being hard-coded.
+#
+# Streamlit mounts the app's ./static folder at /app/static/. Some hosts put
+# the whole site behind a share code, so the query string is carried over too,
+# otherwise the crawler gets a 403 instead of the preview image.
+OG_PATH = "/app/static/og_image.png"
 OG_TITLE = "SkyPrice — AI Flight Price Predictor"
 OG_DESC = (
     "Estimate flight fares with a machine-learning model trained on "
     "300,153 real routes. Instant, explainable fare estimates."
 )
+
+
+def _public_origin() -> str:
+    """Absolute origin of the current page, honouring reverse-proxy headers."""
+    try:
+        headers = {k.lower(): v for k, v in st.context.headers.items()}
+    except Exception:  # pragma: no cover - context unavailable outside a session
+        return ""
+
+    host = headers.get("x-forwarded-host") or headers.get("host") or ""
+    if not host:
+        return ""
+
+    proto = headers.get("x-forwarded-proto") or ("https" if host.endswith(".host") else "http")
+    return f"{proto}://{host}"
+
+
+def _og_image_url() -> str:
+    origin = _public_origin()
+    if not origin:
+        return OG_PATH
+
+    url = f"{origin}{OG_PATH}"
+    share_code = st.query_params.get("sharecode")
+    if share_code:
+        url = f"{url}?sharecode={share_code}"
+    return url
+
+
+OG_IMAGE = _og_image_url()
 
 st.markdown(
     f"""
@@ -58,6 +92,7 @@ st.markdown(
 <meta property="og:description" content="{OG_DESC}" />
 <meta property="og:image" content="{OG_IMAGE}" />
 <meta property="og:type" content="website" />
+<meta property="og:site_name" content="SkyPrice" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="{OG_TITLE}" />
 <meta name="twitter:description" content="{OG_DESC}" />
